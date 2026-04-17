@@ -1,0 +1,10 @@
+\vspace{-3mm}
+\section{Limitation and Future Work}
+\vspace{-1mm}
+While the Info-Gain Sampler demonstrates significant improvements in generation quality across multiple domains, there are several avenues for further refinement.
+
+\noindent\textbf{More Efficient Implementation.} Although the Info-Gain Sampler leverages parallel evaluation and acceleration techniques to minimize latency, the search process still incurs higher computational cost than greedy decoding. Future work could explore more efficient lookahead mechanisms, adaptive branching, and hardware-level optimizations to further enhance inference throughput.
+
+\noindent\textbf{Refinement of Action Sampler.} Our action sampler currently leverages local uncertainty as a heuristic for candidate generation. Although this approach is robust and yields high-quality plans, future research could investigate more sophisticated sampling strategies that go beyond local heuristics. Such advancements would likely enhance both the diversity and quality of the candidate set.
+
+% \noindent\textbf{Training-Inference Synergy.} While the Info-Gain Sampler is a versatile, training-free method, its performance could be further enhanced by aligning the model's training objective with strategic planning. Future work could investigate planning-aware masking schedules or reinforcement learning from trajectory-based feedback to better exploit the global dependencies identified during sampling.

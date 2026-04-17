@@ -1,0 +1,56 @@
+\section{Preliminary}
+% \subsection{Masked Diffusion Models.}
+% Let $L$ denote the sequence length and $\mathcal{V}$ the vocabulary. A state $z_t \in (\mathcal{V}\cup\{\texttt{[MASK]}\})^L$ is a length-$L$ sequence whose entries are either vocabulary tokens or a special mask token $\texttt{[MASK]}$, representing positions that have not yet been determined. The generation process starts from a fully masked state $z_{T_0} = (\texttt{[MASK]})^L$ and progressively replaces masked positions with concrete tokens. The denoising trajectory terminates at $z_0 \in \mathcal{V}^L$, where no masked tokens remain, i.e., the sequence is fully specified.
+
+% At step $t$, we define the set of masked positions as $\mathcal{M}_t := \{\ell \in \{1,\dots,L\}\mid z_t[\ell]=\texttt{[MASK]}\}$. Conditioned on the current partially observed sequence $z_t$, the model parameterized by $\theta$ predicts, for each $\ell\in\mathcal{M}_t$, a categorical distribution over the vocabulary given by $p_\theta(x \mid z_t,\ell)$ for $x\in\mathcal{V}$. Due to the bidirectional architecture, each conditional distribution depends on all visible (non-masked) tokens in $z_t$, rather than only on a left-to-right prefix.
+
+% Training minimizes the negative evidence lower bound (ELBO), which in practice reduces to a cross-entropy loss over masked positions: given a partially masked sequence sampled from the forward noising process, the objective encourages $p_\theta(\cdot \mid z_t,\ell)$ to match the ground-truth token at each $\ell\in\mathcal{M}_t$.At inference time, the model operates non-autoregressively: for a given state $z_t$, it computes all distributions $\{p_\theta(\cdot \mid z_t,\ell)\}_{\ell\in\mathcal{M}_t}$ simultaneously in a single forward pass. A decoding policy then selects a subset of masked positions to fill (e.g., via sampling or confidence-based selection), producing the next state $z_{t-1}$. This iterative refinement continues until $\mathcal{M}_t=\varnothing$.
+
+
+% \subsection{Samplers.}
+% In autoregressive models (ARMs), the sampler decides \textit{how to sample} the next token at a fixed position.
+% In contrast, an MDM sampler $\pi$ decides \textit{how to sample across} the remaining masked set $\mathcal{M}_t$.
+% At step $t$, the sampler selects a subset of positions $A_t \subseteq \mathcal{M}_t$ and a token assignment on it,
+% \begin{equation}
+% a_t := \{(\ell,\hat{x}_\ell)\mid \ell\in A_t\},
+% \end{equation}
+% where $\hat{x}_\ell \in \mathcal{V}$ is sampled from $p_\theta(\cdot \mid z_t,\ell)$ (possibly with top-$k$/top-$p$ and temperature).
+% Applying $a_t$ to $z_t$ yields the next state $z_{t-1}=\mathrm{Apply}(z_t,a_t)$ by filling the selected masks,
+% and the process repeats until $\mathcal{M}_0=\emptyset$.
+
+% \noindent\textbf{Certainty-based samplers.}
+% Existing samplers typically adopt a two-stage routine:
+% (i) \textit{Token Sampling} draws candidate tokens $\hat{x}_\ell$ from $p_\theta(\cdot\mid z_t,\ell)$ for each $\ell\in\mathcal{M}_t$;
+% (ii) \textit{Position Selection} greedily chooses positions using a certainty score
+% $\phi(\ell,z_t)$ (e.g., confidence, entropy, or margin).
+% A common formulation is to select $A_t$ by maximizing the total certainty score:
+% \begin{equation}
+% A_t^* \;=\; \argmax_{A_t \subseteq \mathcal{M}_t,\ |A_t|=K_t}\ \sum_{\ell\in A_t}\phi(z_t,\ell),
+% \label{eq:certainty_select}
+% \end{equation}
+% where $K_t$ is determined by a step scheduling function (i.e., the number of positions decoded per step).
+% The action is then instantiated as $a_t^*=\{(\ell,\hat{x}_\ell)\mid \ell\in A_t^*\}$.
+% Representative certainty-based scoring functions include \textit{confidence}~\cite{chang2022maskgit},
+% \textit{entropy}~\cite{ye2025dream}, and \textit{margin}~\cite{kim2025train}. Details of these and other scoring functions are provided in Appendix~\ref{appendix:baselines}.
+
+\subsection{Masked Diffusion Models (MDMs)}
+We consider discrete data over a vocabulary of size $\mathcal{V}$ with sequence length $L$. Let $\{1,\ldots,\mathcal{V}\}$ denote the vocabulary, and let $0$ represent the special mask token. A state is denoted as $z_t \in \{0,1,\ldots,\mathcal{V}\}^L$ for discrete time steps $t = 0,1,\ldots,T$, where $z_t^\ell$ is the token at position $\ell$. The data distribution $p_{\text{data}}$ is defined over fully unmasked sequences in $\{1,\ldots,m\}^L$, corresponding to $z_0$.
+
+\textbf{Forward process.}
+The forward process gradually corrupts a clean data point $z_0 \sim p_{\text{data}}$ by independently masking each coordinate over $T$ steps. At each step, tokens are progressively replaced by the mask token $0$ according to a fixed schedule, such that at time $T$, the state is fully masked, i.e., $z_T = (0,\ldots,0)$.
+
+\textbf{Reverse process and training.}
+To generate samples, we learn to reverse this forward process. A denoising network $p_\theta^\ell(\cdot|z_t)$ predicts, for each masked position $\ell$, the distribution of the original token $z_0^\ell$. The model is trained by minimizing the evidence lower bound, which reduces to a weighted cross-entropy loss over masked positions. As revealed in \cite{kim2025train}, this loss weights all possible infilling problems equally, meaning the optimal $p_\theta$ learns to predict any masked token given any context.
+
+\textbf{Sampling.}
+Sampling starts from the fully masked state $z_T = (0,\ldots,0)$. At each step $t$ (going backwards from $T$ to $1$), given current state $z_t$, the model computes distributions $\{p_\theta^\ell(\cdot|z_t)\}_{\ell\in\mathcal{M}_t}$ for all masked positions $\mathcal{M}_t:=\{\ell\mid z_t^\ell=0\}$ in a single forward pass.
+
+A \textit{sampler} $\pi$ determines how to use these distributions to produce the next state $x_{t-1}$. Unlike autoregressive models where the sampler decides the next token at a fixed position, a sampler for MDMs decides which masked positions to fill and what tokens to assign. Specifically, it selects a subset $A_t\subseteq\mathcal{M}_t$ to unmask and, for each $\ell\in A_t$, assigns a token $\hat{x}^\ell\sim p_\theta^\ell(\cdot|z_t)$ (optionally with temperature scaling or top-$k$ filtering). This yields an action $a_t:=\{(\ell,\hat{x}^\ell)\mid\ell\in A_t\}$. Applying $a_t$ to $z_t$ produces $x_{t-1}=\textsc{Apply}(z_t,a_t)$, where each selected position is filled and all others remain unchanged. This process repeats until reaching $z_0$, yielding a fully generated sequence $z_0\in\{1,\ldots,m\}^L$.
+
+\noindent\textbf{Certainty-based samplers.}
+A widely used family of samplers follows a two-stage procedure at each step. First, \textit{token sampling}: for each masked position $\ell\in\mathcal{M}_t$, draw a candidate token $\hat{x}^\ell\sim p_\theta^\ell(\cdot|z_t)$. Second, \textit{position selection}: select which positions to actually unmask using a \textit{certainty score} $\phi(\ell,z_t)$ that measures the model's confidence at position $\ell$. Common choices for $\phi$ include the top-1 probability of the predictive distribution (confidence), the negative entropy of the predictive distribution, or the margin between the top-2 probabilities \cite{chang2022maskgit, ye2025dream, kim2025train}. A formal description of mainstream certainty-based samplers is provided in Appendix~\ref{appendix:baselines}.
+Given a time-dependent budget $K_t$ (the number of positions to unmask at step $t$, determined by a predefined scheduling function), the sampler selects the subset $A_t^*$ that maximizes total certainty:
+\begin{equation}
+A_t^* = \underset{A_t\subseteq\mathcal{M}_t, |A_t|=K_t}{\mathrm{argmax}} \sum_{\ell\in A_t} \phi(\ell,z_t).
+\end{equation}
+The final action is then $a_t^* = \{(\ell,\hat{x}^\ell)\mid\ell\in A_t^*\}$. This "most certain first" strategy fills positions where the model is most confident, leaving harder decisions for later steps when more context is available.

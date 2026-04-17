@@ -1,0 +1,29 @@
+\begin{table*}[t]
+\centering
+\caption{Unified view of MDM samplers. \textbf{Selection Criteria} denotes the objective function optimized at each decoding step. \textbf{Temperature Sensitivity} indicates robustness of performance to temperature-based stochastic sampling, while \textbf{Greedy Location Selection} marks whether the sampler selects positions based solely on immediate certainty without considering future information gain.}
+\label{tab:comparison}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Sampler} & \textbf{Selection Criteria} & \textbf{Temperature Sensitivity} & \textbf{Greedy Selection} \\ 
+\midrule
+Uniform~\cite{austin2021structured}  & $-$ & High & {\color{green!60!black}$\times$} \\
+Confidence~\cite{chang2022maskgit}  & $\sum_{\ell \in A_t}\max p_\theta(x_\ell\mid z_t)$ & High & {\color{red}$\checkmark$} \\
+Entropy~\cite{benhamu2025entropy}  & $-\sum_{\ell \in A_t} H^{(\ell)}(z_t)$ & High & {\color{red}$\checkmark$} \\
+Margin~\cite{kim2025train}  & $\sum_{\ell \in A_t}(p_{\text{top1}} - p_{\text{top2}})$ & High & {\color{red}$\checkmark$} \\
+KLASS$^\dagger$~\cite{kim2025klass}  & $\sum_{\ell \in A_t}(\max p_\theta(x_\ell\mid z_t)+\mathbf{1}_{D_{KL}<\epsilon})$ & High & {\color{red}$\checkmark$} \\
+PC-Sampler~\cite{huang2025pc}  & $\sum_{\ell \in A_t}(w_\ell \cdot \mathcal{C}_t^{(\ell)})$ & Moderate & {\color{red}$\checkmark$} \\
+LookUM~\cite{lee2025lookahead}  & $\frac{1}{|M_{t-1}|} \cdot\sum_{\ell \in M_{t-1}}\phi(z_{t-1}, \ell)$ & Moderate & {\color{green!60!black}$\times$} \\
+
+\midrule
+\textbf{Info-Gain (Ours)} & $\text{IG}(a_t; z_t)-\sum_{\ell \in A_t} H^{(\ell)}(z_t)$ & \textbf{Low} & {\color{green!60!black}$\times$} \\ 
+\bottomrule
+\end{tabular}
+$^\dagger$We adapt KLASS to ensure its decoding procedure adheres to the specified step scheduler.
+\end{table*}
+\section{Related Work}
+\noindent\textbf{Masked Diffusion Models.} Discrete diffusion models provide a non-autoregressive alternative for sequence generation, grounded in theoretical frameworks for discrete and masked data~\cite{austin2021structured, lou2024discrete, rombach2022high}. Unlike ARMs, which often require training interventions for long-horizon planning~\cite{hu2025beliefstatetransformer,teoh2025nextlatentpredictiontransformerslearn}, bidirectionality in MDMs naturally enables global reasoning~\cite{ye2024beyond}. MDM research has diverged into training large models from scratch, like LLaDA \cite{nie2025large}, and adapting pre-trained autoregressive models, such as Dream, DiffuLLaMA, and DIMPLE \cite{ye2025dream, gong2024scaling, yu2025dimple}. To enhance long-sequence modeling, hybrid semi-autoregressive (Semi-AR) architectures like Block Diffusion~\cite{arriola2025block}, Diffusion Forcing~\cite{chen2024diffusion}, and absorbing diffusion variants \cite{zheng2025masked} enable KV-caching for better efficiency. Recent optimizations like Fast-dLLM/v2 \cite{wu2025fast, wu2025fastv2} and models such as SDAR \cite{cheng2025sdar}, TraDo \cite{wang2025revolutionizingreinforcementlearningframework}, and WeDLM \cite{liu2025wedlm} have further advanced complex reasoning and long-text generation.
+
+\noindent\textbf{Samplers.} 
+Due to the causal factorization, sampling strategies for ARMs typically rely on assessing and regulating local uncertainty in next-token prediction to improve generation quality and diversity. A broad class of samplers has been proposed, including deterministic decoding strategies such as beam search~\cite{wu2016google, freitag2017beam} and stochastic decoding strategies~\cite{holtzman2019curious,fan2018hierarchicalneuralstorygeneration,nguyen2024turning}. 
+% Operating under a fixed causal order, these approaches filter high-entropy candidates to balance coherence and diversity, making cumulative uncertainty a useful proxy for generation quality~\cite{zhu2024improving}. 
+In contrast to ARMs, Masked Diffusion Models (MDMs) introduce a fundamentally different sampling problem: beyond deciding \emph{what} token to decode, samplers must also decide \emph{where} (i.e., which position) to decode within the non-causal sequence. This expanded decision space amplifies the impact of early decoding choices and renders local uncertainty criteria insufficient. Still, existing MDM samplers typically rely on greedy, certainty-based heuristics to select decoding positions, using metrics such as entropy and margin scores~\cite{nie2025large, ye2025dream, chang2022maskgit}. Some approaches further incorporate calibration or stability refinements to improve robustness~\cite{benhamu2025entropy, kim2025klass, huang2025pc}. Nevertheless, these approaches share a common limitation: decoding decisions are made myopically based on greedy metrics. They do not account for the downstream impact of each decoding decision on global uncertainty or information gain across the remaining masked tokens. We provide a comparison between existing samplers for MDMs in Table~\ref{tab:comparison}.\footnote{To enable a more comprehensive evaluation, we also include LookUM~\cite{lee2025lookahead}, a concurrent work that shares a similar motivation with our approach. We provide a straight comparison in Section~\ref{sec:result-analysis} and a detailed comparison in Appendix~\ref{appendix:baselines}.}
