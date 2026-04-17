@@ -3,90 +3,479 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Improving Sampling for Masked Diffusion Models via Information Gain</title>
-  <meta name="description" content="Project page for the paper Improving Sampling for Masked Diffusion Models via Information Gain." />
-  <link rel="stylesheet" href="/styles.css" />
+  <title>Info-Gain Sampler · Improving Sampling for Masked Diffusion Models</title>
+  <meta name="description" content="Project page for the paper: Improving Sampling for Masked Diffusion Models via Information Gain." />
+  <meta property="og:title" content="Info-Gain Sampler" />
+  <meta property="og:description" content="A training-free decoding framework for Masked Diffusion Models that balances immediate certainty with future information gain." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="hero" id="top">
-    <div class="container">
-      <p class="venue">arXiv:2602.18176v2</p>
-      <h1>Improving Sampling for Masked Diffusion Models via Information Gain</h1>
-      <p class="authors">
-        Kaisen Yang, Jayden Teoh, Kaicheng Yang, Yitong Zhang, Alex Lamb
-      </p>
-      <p class="affiliations">
-        Tsinghua University · Singapore Management University · Shanghai Jiao Tong University · Beihang University
-      </p>
-      <div class="links">
-        <a href="https://arxiv.org/html/2602.18176v2" target="_blank" rel="noopener">arXiv</a>
-        <a href="/assets/paper.pdf" target="_blank" rel="noopener">PDF</a>
-        <a href="https://github.com/yks23/Information-Gain-Sampler" target="_blank" rel="noopener">Code</a>
-      </div>
-    </div>
-  </header>
 
-  <nav class="toc container">
+<!-- ============== HERO ============== -->
+<header class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true">
+    <svg class="hero-grid" viewBox="0 0 800 600" preserveAspectRatio="none">
+      <defs>
+        <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+          <circle cx="1.4" cy="1.4" r="1.4" fill="currentColor" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#dots)" />
+    </svg>
+    <div class="hero-glow g1"></div>
+    <div class="hero-glow g2"></div>
+  </div>
+
+  <div class="hero-inner container">
+    <div class="hero-eyebrow">
+      <span class="badge">Preprint&nbsp;2026</span>
+      <span class="dot">·</span>
+      <span class="eyebrow-text">Masked Diffusion · Training-free Sampler</span>
+    </div>
+
+    <h1 class="hero-title">
+      Improving Sampling for<br />
+      <span class="title-mark">Masked Diffusion Models</span><br />
+      via <em>Information Gain</em>
+    </h1>
+
+    <p class="authors">
+      <a href="#">Kaisen Yang</a><sup>1</sup>,
+      <a href="#">Jayden Teoh</a><sup>2</sup>,
+      <a href="#">Kaicheng Yang</a><sup>3</sup>,
+      <a href="#">Yitong Zhang</a><sup>4</sup>,
+      <a href="#">Alex Lamb</a><sup>1</sup>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup>Tsinghua University &nbsp;·&nbsp;
+      <sup>2</sup>Singapore Management University &nbsp;·&nbsp;
+      <sup>3</sup>Shanghai Jiao Tong University &nbsp;·&nbsp;
+      <sup>4</sup>Beihang University
+    </p>
+
+    <div class="links">
+      <a class="btn btn-primary" href="https://arxiv.org/html/2602.18176v2" target="_blank" rel="noopener">
+        <span class="btn-icon">arXiv</span><span class="btn-text">2602.18176</span>
+      </a>
+      <a class="btn" href="assets/paper.pdf" target="_blank" rel="noopener">
+        <span class="btn-icon">PDF</span><span class="btn-text">Paper</span>
+      </a>
+      <a class="btn" href="https://github.com/yks23/Information-Gain-Sampler" target="_blank" rel="noopener">
+        <span class="btn-icon">‹/›</span><span class="btn-text">Code</span>
+      </a>
+      <a class="btn" href="#bibtex">
+        <span class="btn-icon">@</span><span class="btn-text">BibTeX</span>
+      </a>
+    </div>
+
+    <div class="hero-tldr">
+      <span class="tldr-label">TL;DR</span>
+      <span class="tldr-body">
+        Existing MDM samplers are <em>myopic</em> — they pick the locally most certain token without thinking ahead.
+        Info-Gain Sampler additionally rewards decisions that <em>reduce uncertainty over the rest of the sequence</em>,
+        and consistently beats greedy baselines across reasoning, code, image and creative writing.
+      </span>
+    </div>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Math · GSM8K</span><span>·</span>
+      <span>MATH-500</span><span>·</span>
+      <span>HumanEval</span><span>·</span>
+      <span>MBPP</span><span>·</span>
+      <span>Sudoku</span><span>·</span>
+      <span>Countdown</span><span>·</span>
+      <span>GenEval</span><span>·</span>
+      <span>ImageNet-512</span><span>·</span>
+      <span>AlpacaEval</span><span>·</span>
+      <span>Math · GSM8K</span><span>·</span>
+      <span>MATH-500</span><span>·</span>
+      <span>HumanEval</span><span>·</span>
+      <span>MBPP</span><span>·</span>
+      <span>Sudoku</span><span>·</span>
+      <span>Countdown</span><span>·</span>
+      <span>GenEval</span><span>·</span>
+      <span>ImageNet-512</span><span>·</span>
+      <span>AlpacaEval</span><span>·</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============== STICKY NAV ============== -->
+<nav class="toc" id="toc">
+  <div class="container toc-inner">
     <a href="#abstract">Abstract</a>
+    <a href="#findings">Key Findings</a>
     <a href="#method">Method</a>
     <a href="#results">Results</a>
+    <a href="#analysis">Analysis</a>
     <a href="#bibtex">BibTeX</a>
-  </nav>
+  </div>
+</nav>
 
-  <main class="container">
-    <section id="abstract" class="card">
-      <h2>Abstract</h2>
-      <p>
-        Masked Diffusion Models (MDMs) offer greater flexibility in decoding order than autoregressive models but require careful planning to achieve high-quality generation.
-        Existing samplers typically adopt greedy heuristics and ignore how current decoding choices affect future steps.
-        We propose <strong>Info-Gain Sampler</strong>, a training-free decoding framework that balances immediate uncertainty with information gain over remaining masked tokens.
-        Across reasoning, coding, creative writing, and image generation, Info-Gain Sampler consistently outperforms prior greedy baselines.
+<main>
+
+  <!-- ============== ABSTRACT ============== -->
+  <section id="abstract" class="section">
+    <div class="container narrow">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Abstract</h2>
+      </div>
+      <p class="prose">
+        Masked Diffusion Models (MDMs) offer greater flexibility in decoding order than autoregressive models, but
+        require careful planning to achieve high-quality generation. Existing samplers typically adopt
+        <em>greedy heuristics</em>, prioritizing positions with the highest local certainty. Through failure-case
+        analysis, we identify a fundamental limitation: such samplers neglect the downstream impact of current decoding
+        choices and fail to minimize <em>cumulative</em> uncertainty.
       </p>
-    </section>
-
-    <section id="method" class="card">
-      <h2>Method</h2>
-      <img src="/assets/workflow.png" alt="Info-Gain Sampler workflow" class="full" />
-      <p class="caption">
-        Overview of Info-Gain Sampler: it evaluates candidate decoding actions by combining immediate confidence and expected reduction of future uncertainty.
+      <p class="prose">
+        We propose the <strong>Info-Gain Sampler</strong>, a principled, training-free decoding framework that balances
+        immediate uncertainty with information gain over future masked tokens. Across reasoning, coding, creative
+        writing, and image generation, Info-Gain Sampler consistently outperforms prior greedy baselines — including a
+        concurrent lookahead method — while keeping practical overhead minimal.
       </p>
-    </section>
+    </div>
+  </section>
 
-    <section id="results" class="card">
-      <h2>Key Results</h2>
-      <ul>
-        <li><strong>+3.6%</strong> average accuracy improvement on 6 reasoning benchmarks (full-attention MDM).</li>
-        <li><strong>63.1%</strong> average win-rate in creative writing evaluation.</li>
-        <li>Reduces cumulative uncertainty from <strong>78.4</strong> to <strong>48.6</strong> on reasoning tasks.</li>
-        <li><strong>+1.9%</strong> gain on GenEval for text-to-image generation.</li>
-      </ul>
+  <!-- ============== KEY FINDINGS ============== -->
+  <section id="findings" class="section section-tinted">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Key Findings</h2>
+        <p class="section-sub">Five headline numbers from the paper.</p>
+      </div>
 
-      <div class="grid2">
-        <figure>
-          <img src="/assets/entropy-trajectory.png" alt="Cumulative entropy trajectories" />
-          <figcaption>Cumulative entropy trajectories.</figcaption>
+      <div class="findings-grid">
+        <article class="finding">
+          <div class="finding-eyebrow">Reasoning · Avg. Pass@1</div>
+          <div class="finding-stat" data-target="11.6" data-suffix=" pp">+11.6 pp</div>
+          <h3 class="finding-title">Largest gain on Semi-AR MDMs</h3>
+          <p class="finding-body">
+            On SDAR-8B-Chat (K=2), Info-Gain pushes average accuracy from 45.1% (LookUM) to <strong>55.8%</strong>,
+            an absolute <strong>+10.7 pp</strong> over the strongest concurrent lookahead baseline.
+          </p>
+        </article>
+
+        <article class="finding">
+          <div class="finding-eyebrow">Cumulative Entropy ↓</div>
+          <div class="finding-stat">78.4 → 48.6</div>
+          <h3 class="finding-title">38% lower trajectory uncertainty</h3>
+          <p class="finding-body">
+            On reasoning tasks, cumulative entropy <code>H̃</code> drops from <strong>78.4</strong> to
+            <strong>48.6</strong> — only ~50% of the best greedy baseline. Lower H̃ correlates with higher accuracy
+            (Pearson <code>r = −0.70</code>).
+          </p>
+        </article>
+
+        <article class="finding">
+          <div class="finding-eyebrow">Creative Writing · Win Rate</div>
+          <div class="finding-stat">63.1<span class="unit">%</span></div>
+          <h3 class="finding-title">Average win-rate vs. baselines</h3>
+          <p class="finding-body">
+            Across temperatures and configs, Info-Gain wins <strong>63.1%</strong> of head-to-heads on AlpacaEval,
+            peaking at <strong>80.3%</strong> against Entropy at high stochasticity (τ = 1.5).
+          </p>
+        </article>
+
+        <article class="finding">
+          <div class="finding-eyebrow">Text-to-Image · GenEval</div>
+          <div class="finding-stat" data-target="58.2">58.2</div>
+          <h3 class="finding-title">+1.9 pp on GenEval, FID 43.3 → 38.1</h3>
+          <p class="finding-body">
+            On MMaDa with τ=0.4, Info-Gain raises GenEval avg. to <strong>58.2</strong> and improves ImageNet-512
+            FID by <strong>5.2</strong> points and IS by <strong>9.7</strong> points.
+          </p>
+        </article>
+
+        <article class="finding">
+          <div class="finding-eyebrow">Practical Overhead</div>
+          <div class="finding-stat">+24<span class="unit">% time</span></div>
+          <h3 class="finding-title">Training-free, near-parallel</h3>
+          <p class="finding-body">
+            Acceleration via threshold <code>γ = 0.8</code> keeps generation time within <strong>+24%</strong> and GPU
+            memory within <strong>+20%</strong> of greedy samplers — no extra training, no KV-cache surgery.
+          </p>
+        </article>
+
+        <article class="finding finding-quote">
+          <div class="finding-eyebrow">Why it works</div>
+          <blockquote>
+            “Bidirectional attention lets MDMs <em>look ahead</em>. Greedy samplers throw that gift away.
+            Info-Gain spends a tiny budget asking: <strong>which token, once revealed, makes the rest of the
+            sequence easier?</strong>”
+          </blockquote>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== METHOD ============== -->
+  <section id="method" class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Method</h2>
+        <p class="section-sub">Score each candidate by immediate cost <em>plus</em> expected future information gain.</p>
+      </div>
+
+      <div class="method-grid">
+        <div class="method-figure">
+          <figure>
+            <img src="assets/workflow.png" alt="Info-Gain Sampler workflow diagram" />
+            <figcaption>
+              At each decoding step, candidate actions are scored by <strong>immediate certainty</strong> plus the
+              <strong>information gain</strong> they induce on the remaining masked positions. Acceleration via
+              early-stopping keeps the per-step overhead low.
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="method-text">
+          <h3>The myopia of greedy MDM samplers</h3>
+          <p>
+            Confidence/Entropy/Margin samplers commit to the locally easiest token at every step. They never ask:
+            <em>“if I commit here, do the other masks become easier or harder?”</em> In MDMs, where attention is
+            bidirectional, that question is <em>cheap</em> to answer.
+          </p>
+
+          <h3>The Info-Gain objective</h3>
+          <p>
+            For each candidate decoding action <code>a</code>, score it by the <em>reduction in expected uncertainty</em>
+            over the remaining masked tokens after committing <code>a</code>. Combine this <em>future</em> term with the
+            usual <em>immediate</em> certainty term and pick the highest-scoring action.
+          </p>
+
+          <h3>Why it stays fast</h3>
+          <ul class="check-list">
+            <li>Sample <strong>N&nbsp;=&nbsp;8</strong> candidates per step (not exhaustive).</li>
+            <li>Score them in a <strong>single forward pass</strong>, batched.</li>
+            <li>Skip lookahead when local certainty &gt; <strong>γ&nbsp;=&nbsp;0.8</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== RESULTS TABLES ============== -->
+  <section id="results" class="section section-dark">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-num light">04</span>
+        <h2 class="section-title">Results</h2>
+        <p class="section-sub">Best in <strong>bold</strong>. All numbers from the paper.</p>
+      </div>
+
+      <div class="table-block">
+        <h3 class="table-title">Semi-AR MDM Reasoning (Pass@1, %)</h3>
+        <p class="table-cap">SDAR-8B-Chat with block size 16, τ<sub>token</sub>=0.7. <code>H̃</code> = cumulative entropy (lower is better).</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>K</th><th>Sampler</th>
+                <th>GSM8K</th><th>MATH500</th><th>HumanEval</th><th>MBPP</th>
+                <th>Avg. ↑</th><th>H̃ ↓</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td rowspan="6">2</td><td>Entropy</td><td>42.2</td><td>24.4</td><td>26.2</td><td>20.6</td><td>28.4</td><td>238.6</td></tr>
+              <tr><td>Confidence</td><td>47.2</td><td>36.6</td><td>24.4</td><td>20.2</td><td>32.1</td><td>204.1</td></tr>
+              <tr><td>Margin</td><td>45.2</td><td>22.4</td><td>19.5</td><td>19.8</td><td>26.7</td><td>230.9</td></tr>
+              <tr><td>KLASS</td><td>50.4</td><td>32.3</td><td>30.7</td><td>26.6</td><td>35.0</td><td>210.3</td></tr>
+              <tr><td>LookUM</td><td>75.3</td><td>44.9</td><td>28.2</td><td>31.8</td><td>45.1</td><td>103.2</td></tr>
+              <tr class="row-best"><td><strong>Info-Gain</strong></td><td><strong>82.7</strong></td><td><strong>54.6</strong></td><td><strong>46.3</strong></td><td><strong>39.4</strong></td><td><strong>55.8</strong></td><td><strong>74.1</strong></td></tr>
+
+              <tr><td rowspan="6">1</td><td>Entropy</td><td>68.8</td><td>44.6</td><td>37.8</td><td>49.0</td><td>34.9</td><td>120.4</td></tr>
+              <tr><td>Confidence</td><td>67.9</td><td>51.4</td><td>42.1</td><td>46.2</td><td>51.9</td><td>117.4</td></tr>
+              <tr><td>Margin</td><td>65.3</td><td>40.2</td><td>32.3</td><td>43.2</td><td>45.3</td><td>138.2</td></tr>
+              <tr><td>KLASS</td><td>69.9</td><td>42.3</td><td>45.7</td><td>46.6</td><td>51.1</td><td>105.3</td></tr>
+              <tr><td>LookUM</td><td>80.3</td><td>60.0</td><td>38.2</td><td>39.8</td><td>54.6</td><td>53.7</td></tr>
+              <tr class="row-best"><td><strong>Info-Gain</strong></td><td><strong>87.9</strong></td><td><strong>61.8</strong></td><td><strong>62.2</strong></td><td><strong>53.0</strong></td><td><strong>66.2</strong></td><td><strong>41.0</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-grid">
+        <div class="table-block">
+          <h3 class="table-title">Text-to-Image · GenEval (MMaDa)</h3>
+          <p class="table-cap">τ<sub>token</sub>=0.4, 50-step cosine scheduler.</p>
+          <div class="table-scroll">
+            <table class="data-table compact">
+              <thead><tr><th>Method</th><th>Single ↑</th><th>Two ↑</th><th>Count ↑</th><th>Color ↑</th><th>Pos ↑</th><th>Attr ↑</th><th>Avg ↑</th></tr></thead>
+              <tbody>
+                <tr><td>Uniform</td><td>94.1</td><td>66.7</td><td>38.4</td><td>78.2</td><td>19.0</td><td>28.8</td><td>54.2</td></tr>
+                <tr><td>Entropy</td><td>94.3</td><td>67.3</td><td>46.0</td><td>79.9</td><td>17.8</td><td>26.8</td><td>55.3</td></tr>
+                <tr><td>Confidence</td><td>93.8</td><td><strong>69.7</strong></td><td>46.3</td><td><strong>81.9</strong></td><td>16.0</td><td>27.0</td><td>56.0</td></tr>
+                <tr><td>Margin</td><td>94.0</td><td>68.7</td><td>47.3</td><td>80.1</td><td>19.0</td><td>29.0</td><td>56.3</td></tr>
+                <tr class="row-best"><td><strong>Info-Gain</strong></td><td><strong>97.5</strong></td><td>68.7</td><td><strong>47.5</strong></td><td>79.8</td><td><strong>25.0</strong></td><td><strong>32.0</strong></td><td><strong>58.2</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block">
+          <h3 class="table-title">Creative Writing · Win-Rate (%)</h3>
+          <p class="table-cap">Length-controlled win-rate against three baselines on AlpacaEval (SDAR-8B-Chat).</p>
+          <div class="table-scroll">
+            <table class="data-table compact">
+              <thead><tr><th>τ</th><th>K</th><th>vs Confidence</th><th>vs Entropy</th><th>vs Margin</th></tr></thead>
+              <tbody>
+                <tr><td rowspan="2">0.5</td><td>1</td><td>65.8</td><td>59.1</td><td>63.6</td></tr>
+                <tr><td>2</td><td>68.9</td><td>70.4</td><td>64.7</td></tr>
+                <tr><td rowspan="2">1.0</td><td>1</td><td>57.7</td><td>60.1</td><td>55.2</td></tr>
+                <tr><td>2</td><td>61.1</td><td>65.7</td><td>57.5</td></tr>
+                <tr><td rowspan="2">1.5</td><td>1</td><td>53.0</td><td>60.3</td><td>54.6</td></tr>
+                <tr class="row-best"><td>2</td><td><strong>70.1</strong></td><td><strong>80.3</strong></td><td><strong>66.8</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== ANALYSIS / FIGURES ============== -->
+  <section id="analysis" class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Analysis</h2>
+        <p class="section-sub">Why cumulative entropy is the right signal — and how Info-Gain reshapes the trajectory.</p>
+      </div>
+
+      <div class="figures-grid">
+        <figure class="figure-card">
+          <img src="assets/entropy-trajectory.png" alt="Cumulative entropy trajectories during decoding" />
+          <figcaption>
+            <strong>Cumulative entropy trajectories.</strong> Info-Gain stabilizes uncertainty far earlier than the
+            greedy Entropy baseline, producing globally cleaner decoding paths.
+          </figcaption>
         </figure>
-        <figure>
-          <img src="/assets/accuracy-vs-entropy.png" alt="Accuracy versus cumulative entropy" />
-          <figcaption>Accuracy vs. cumulative entropy.</figcaption>
+
+        <figure class="figure-card">
+          <img src="assets/accuracy-vs-entropy.png" alt="Scatter plot of accuracy versus cumulative entropy" />
+          <figcaption>
+            <strong>Accuracy vs. cumulative entropy.</strong> Across configs, lower H̃ predicts higher accuracy
+            (Pearson r = −0.70). Info-Gain points cluster in the bottom-right corner — low H̃, high accuracy.
+          </figcaption>
+        </figure>
+
+        <figure class="figure-card wide">
+          <img src="assets/imagenet-compare.png" alt="ImageNet-512 qualitative comparison" />
+          <figcaption>
+            <strong>Qualitative ImageNet-512 samples.</strong> Same prompt, same model (MMaDa), only the sampler
+            differs. Info-Gain produces sharper, more globally coherent compositions.
+          </figcaption>
+        </figure>
+
+        <figure class="figure-card">
+          <img src="assets/temperature-sensitivity.png" alt="Temperature sensitivity of cumulative entropy" />
+          <figcaption>
+            <strong>Temperature sensitivity.</strong> Greedy baselines blow up under temperature scaling. Info-Gain
+            keeps trajectory uncertainty stable across position and token temperatures.
+          </figcaption>
         </figure>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="bibtex" class="card">
-      <h2>BibTeX</h2>
-      <pre><code>@inproceedings{yang2026infogain,
-  title={Improving Sampling for Masked Diffusion Models via Information Gain},
-  author={Yang, Kaisen and Teoh, Jayden and Yang, Kaicheng and Zhang, Yitong and Lamb, Alex},
-  booktitle={International Conference on Machine Learning (ICML)},
-  year={2026}
+  <!-- ============== BIBTEX ============== -->
+  <section id="bibtex" class="section section-tinted">
+    <div class="container narrow">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Cite</h2>
+      </div>
+      <div class="bibtex-block">
+        <button class="copy-btn" id="copyBibtex" aria-label="Copy BibTeX">Copy</button>
+<pre><code id="bibtexCode">@article{yang2026improving,
+  title   = {Improving Sampling for Masked Diffusion Models via Information Gain},
+  author  = {Yang, Kaisen and Teoh, Jayden and Yang, Kaicheng
+             and Zhang, Yitong and Lamb, Alex},
+  journal = {arXiv preprint arXiv:2602.18176},
+  year    = {2026}
 }</code></pre>
-    </section>
-  </main>
+      </div>
+    </div>
+  </section>
 
-  <footer class="container footer">
-    <p>© 2026 Info-Gain Sampler Project Page</p>
-    <a href="#top">Back to top</a>
-  </footer>
+</main>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-left">
+      <div class="footer-brand">Info-Gain&nbsp;Sampler</div>
+      <p class="footer-meta">© 2026 · Project page · Built with intent, not template.</p>
+    </div>
+    <div class="footer-right">
+      <a href="https://arxiv.org/html/2602.18176v2" target="_blank" rel="noopener">arXiv</a>
+      <a href="https://github.com/yks23/Information-Gain-Sampler" target="_blank" rel="noopener">GitHub</a>
+      <a href="#top">↑ Top</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Reveal-on-scroll
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.section, .finding, .figure-card, .table-block, .hero-tldr')
+    .forEach(el => { el.classList.add('reveal'); io.observe(el); });
+
+  // Smooth scroll for in-page links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Sticky nav active state
+  const navLinks = document.querySelectorAll('#toc a');
+  const sections = [...navLinks].map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  const navIo = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      }
+    }
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(s => s && navIo.observe(s));
+
+  // BibTeX copy
+  const copyBtn = document.getElementById('copyBibtex');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const text = document.getElementById('bibtexCode').innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 1600);
+      } catch {
+        copyBtn.textContent = 'Press Ctrl+C';
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
