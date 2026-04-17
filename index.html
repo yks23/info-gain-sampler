@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Improving Sampling for Masked Diffusion Models via Information Gain</title>
+  <meta name="description" content="Project page for the paper Improving Sampling for Masked Diffusion Models via Information Gain." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="container">
+      <p class="venue">arXiv:2602.18176v2</p>
+      <h1>Improving Sampling for Masked Diffusion Models via Information Gain</h1>
+      <p class="authors">
+        Kaisen Yang, Jayden Teoh, Kaicheng Yang, Yitong Zhang, Alex Lamb
+      </p>
+      <p class="affiliations">
+        Tsinghua University · Singapore Management University · Shanghai Jiao Tong University · Beihang University
+      </p>
+      <div class="links">
+        <a href="https://arxiv.org/html/2602.18176v2" target="_blank" rel="noopener">arXiv</a>
+        <a href="/assets/paper.pdf" target="_blank" rel="noopener">PDF</a>
+        <a href="https://github.com/yks23/Information-Gain-Sampler" target="_blank" rel="noopener">Code</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc container">
+    <a href="#abstract">Abstract</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#bibtex">BibTeX</a>
+  </nav>
+
+  <main class="container">
+    <section id="abstract" class="card">
+      <h2>Abstract</h2>
+      <p>
+        Masked Diffusion Models (MDMs) offer greater flexibility in decoding order than autoregressive models but require careful planning to achieve high-quality generation.
+        Existing samplers typically adopt greedy heuristics and ignore how current decoding choices affect future steps.
+        We propose <strong>Info-Gain Sampler</strong>, a training-free decoding framework that balances immediate uncertainty with information gain over remaining masked tokens.
+        Across reasoning, coding, creative writing, and image generation, Info-Gain Sampler consistently outperforms prior greedy baselines.
+      </p>
+    </section>
+
+    <section id="method" class="card">
+      <h2>Method</h2>
+      <img src="/assets/workflow.png" alt="Info-Gain Sampler workflow" class="full" />
+      <p class="caption">
+        Overview of Info-Gain Sampler: it evaluates candidate decoding actions by combining immediate confidence and expected reduction of future uncertainty.
+      </p>
+    </section>
+
+    <section id="results" class="card">
+      <h2>Key Results</h2>
+      <ul>
+        <li><strong>+3.6%</strong> average accuracy improvement on 6 reasoning benchmarks (full-attention MDM).</li>
+        <li><strong>63.1%</strong> average win-rate in creative writing evaluation.</li>
+        <li>Reduces cumulative uncertainty from <strong>78.4</strong> to <strong>48.6</strong> on reasoning tasks.</li>
+        <li><strong>+1.9%</strong> gain on GenEval for text-to-image generation.</li>
+      </ul>
+
+      <div class="grid2">
+        <figure>
+          <img src="/assets/entropy-trajectory.png" alt="Cumulative entropy trajectories" />
+          <figcaption>Cumulative entropy trajectories.</figcaption>
+        </figure>
+        <figure>
+          <img src="/assets/accuracy-vs-entropy.png" alt="Accuracy versus cumulative entropy" />
+          <figcaption>Accuracy vs. cumulative entropy.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="bibtex" class="card">
+      <h2>BibTeX</h2>
+      <pre><code>@inproceedings{yang2026infogain,
+  title={Improving Sampling for Masked Diffusion Models via Information Gain},
+  author={Yang, Kaisen and Teoh, Jayden and Yang, Kaicheng and Zhang, Yitong and Lamb, Alex},
+  booktitle={International Conference on Machine Learning (ICML)},
+  year={2026}
+}</code></pre>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <p>© 2026 Info-Gain Sampler Project Page</p>
+    <a href="#top">Back to top</a>
+  </footer>
+</body>
+</html>
