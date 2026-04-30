@@ -130,6 +130,22 @@ code, pre {
   font-weight: 500;
 }
 
+.news-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fde8cc 100%);
+  border: 1.5px solid var(--amber-soft);
+  color: var(--amber);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px -4px rgba(194,65,12,0.18);
+}
+
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -139,6 +155,10 @@ code, pre {
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.12em;
+}
+
+.badge-icml {
+  background: var(--amber);
 }
 
 .dot { color: var(--hairline-strong); }
